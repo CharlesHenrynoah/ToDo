@@ -1,0 +1,21 @@
+{
+  "name": "todo-project",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && node app.js",
+    "install": "cd frontend && npm install && cd ../backend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^6.5.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.3",
+    "axios": "^1.7.7",
+    "pg": "^8.12.0",
+    "pg-hstore": "^2.3.4",
+    "react-router-dom": "^6.26.2",
+    "sequelize": "^6.37.3"
+  }
+}
