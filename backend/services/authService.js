@@ -1,41 +1,75 @@
 // services/authService.js
 const supabase = require('../config/supabase');
+const bcrypt = require('bcrypt');
 
 const authService = {
   async signUp(email, password, userData) {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      console.log('Début de l\'inscription pour:', email);
+      console.log('Données utilisateur reçues:', userData);
 
-      if (error) {
-        console.error('Erreur Supabase lors de l\'inscription:', error);
-        throw error;
+      // Vérifier si l'email existe déjà
+      const { data: existingUsers, error: checkError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', email);
+
+      if (checkError) {
+        console.error('Erreur lors de la vérification de l\'email:', checkError);
+        throw checkError;
       }
 
-      if (!data.user) {
-        console.error('Inscription échouée: aucun utilisateur retourné');
-        throw new Error('L\'inscription a échoué pour une raison inconnue');
+      if (existingUsers && existingUsers.length > 0) {
+        throw new Error('Cette adresse email est déjà utilisée');
       }
 
-      // Insérer les données supplémentaires de l'utilisateur dans votre table personnalisée
-      const { error: insertError } = await supabase
+      // Insérer les données de l'utilisateur dans votre table personnalisée
+      console.log('Tentative d\'insertion dans la table users');
+      const { data: insertData, error: insertError } = await supabase
         .from('users')
         .insert({
-          user_id: data.user.id,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          email: data.user.email,
-          // Ajoutez d'autres champs si nécessaire
-        });
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          email: email,
+          password_hash: await bcrypt.hash(password, 10),
+        })
+        .select();
 
       if (insertError) {
         console.error('Erreur lors de l\'insertion des données utilisateur:', insertError);
         throw insertError;
       }
 
-      return data;
+      console.log('Données insérées avec succès:', insertData);
+
+      if (!insertData || insertData.length === 0) {
+        throw new Error('Aucune donnée retournée après l\'insertion');
+      }
+
+      const userId = insertData[0].user_id;
+      console.log('ID utilisateur généré:', userId);
+
+      // Créer l'utilisateur dans Supabase Auth
+      console.log('Création de l\'utilisateur dans Supabase Auth');
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            custom_user_id: userId
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Erreur Supabase lors de l\'inscription:', authError);
+        // Si l'inscription Supabase échoue, supprimez l'entrée de la table users
+        await supabase.from('users').delete().eq('user_id', userId);
+        throw authError;
+      }
+
+      console.log('Inscription réussie');
+      return { user: { ...authData.user, id: userId } };
     } catch (error) {
       console.error('Erreur complète lors de l\'inscription:', error);
       throw error;

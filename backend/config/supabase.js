@@ -3,12 +3,12 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_KEY; // Changé de SUPABASE_ANON_KEY à SUPABASE_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase URL or Anon Key');
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase URL or Key');
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = supabase;

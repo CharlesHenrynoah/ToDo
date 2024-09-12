@@ -6,13 +6,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
+    "start:dev": "SUPABASE_URL=https://vbonzfkzzsjxdqrequrv.supabase.co SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZib256Zmt6enNqeGRxcmVxdXJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU5MDM0MDgsImV4cCI6MjA0MTQ3OTQwOH0.3D2z3S0qu-2H7lRx_oOttmfsDQSxJ0U-9RhAYrNnoYc",
     "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
     "axios": "^1.7.7",
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.20.0",

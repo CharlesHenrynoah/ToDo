@@ -1,24 +1,16 @@
-// frontend/src/pages/SignupUploadImage.js
 import React from 'react';
-import { useLocation, Navigate } from 'react-router-dom';
-import './SignupUploadImage.css';
+import { useLocation } from 'react-router-dom';
+import UploadImageForm from '../components/organismes/UploadImageForm';
 
 const SignupUploadImage = () => {
   const location = useLocation();
-  const user = location.state?.user;
+  const userId = location.state?.userId;
 
-  if (!user) {
-    console.log('Aucun utilisateur trouvé, redirection vers /signup');
-    return <Navigate to="/signup" />;
-  }
-
-  console.log('Utilisateur reçu dans SignupUploadImage:', user);
+  console.log('SignupUploadImage rendu, userId:', userId);
 
   return (
-    <div className="signup-upload-image">
-      <h1>Ajouter une photo de profil</h1>
-      <p>Bienvenue, {user.firstName}!</p>
-      {/* Ajoutez ici le formulaire d'upload d'image */}
+    <div>
+      <UploadImageForm userId={userId} />
     </div>
   );
 };

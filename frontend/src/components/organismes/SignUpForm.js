@@ -14,7 +14,7 @@ const SignUpForm = () => {
     confirmationMotDePasse: '',
   });
   const [accepterConditions, setAccepterConditions] = useState(false);
-  const [erreur, setErreur] = useState(''); // Modification pour afficher un seul message d'alerte à la fois
+  const [erreur, setErreur] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,16 +22,6 @@ const SignUpForm = () => {
       ...prevState,
       [name]: value
     }));
-
-    if (name === 'confirmationMotDePasse' || name === 'motDePasse') {
-      if (formData.motDePasse !== value && name === 'confirmationMotDePasse') {
-        setErreur('Les mots de passe ne correspondent pas');
-      } else if (formData.confirmationMotDePasse !== value && name === 'motDePasse') {
-        setErreur('Les mots de passe ne correspondent pas');
-      } else {
-        setErreur('');
-      }
-    }
 
     // Vérification des caractères spéciaux ou des chiffres dans le nom ou le prénom
     if (name === 'prenom' || name === 'nom') {
@@ -45,39 +35,42 @@ const SignUpForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErreur('');
-
-    if (formData.motDePasse !== formData.confirmationMotDePasse) {
-      setErreur('Les mots de passe ne correspondent pas');
-      return;
-    }
-
+    console.log('handleSubmit appelé');
+    
     if (!accepterConditions) {
-      setErreur('Veuillez accepter les conditions d\'utilisation');
+      setErreur('Veuillez accepter les conditions d\'utilisation et la politique de confidentialité.');
       return;
     }
-
+    if (formData.motDePasse !== formData.confirmationMotDePasse) {
+      setErreur('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    setErreur('');
     try {
+      console.log('Envoi de la requête d\'inscription...');
       const response = await axios.post('http://localhost:5000/api/auth/signup', {
         email: formData.email,
         password: formData.motDePasse,
         firstName: formData.prenom,
         lastName: formData.nom
       });
-      console.log('Inscription réussie', response.data);
-      navigate('/signup-upload-image', { state: { user: response.data.user } });
-    } catch (error) {
-      console.error('Erreur détaillée lors de l\'inscription:', error.response);
-      if (error.response && error.response.data && error.response.data.error) {
-        if (error.response.data.error.includes('Error sending confirmation email')) {
-          setErreur('Erreur lors de l\'envoi de l\'email de confirmation. Veuillez vérifier votre adresse email ou réessayer plus tard.');
-        } else if (error.response.data.error.includes('duplicate key value violates unique constraint "users_email_key"')) {
-          setErreur('Cet email est déjà utilisé pour un utilisateur.');
-        } else {
-          setErreur(`Erreur: ${error.response.data.error}`);
-        }
+      
+      console.log('Réponse complète du serveur:', response.data);
+      
+      if (response.data && response.data.user && response.data.user.id) {
+        console.log('Inscription réussie, ID utilisateur:', response.data.user.id);
+        // Redirection immédiate
+        navigate('/signup-upload-image', { state: { userId: response.data.user.id } });
       } else {
-        setErreur('Une erreur s\'est produite lors de l\'inscription. Veuillez réessayer.');
+        console.error('Erreur: Structure de réponse inattendue:', response.data);
+        setErreur('Une erreur est survenue lors de l\'inscription: données utilisateur manquantes');
+      }
+    } catch (error) {
+      console.error('Erreur complète lors de l\'inscription:', error.response?.data || error);
+      if (error.response?.data?.error === 'L\'adresse email fournie semble être invalide ou inexistante.') {
+        setErreur('L\'adresse email fournie semble être invalide ou inexistante. Veuillez vérifier et réessayer.');
+      } else {
+        setErreur(error.response?.data?.error || 'Une erreur est survenue lors de l\'inscription');
       }
     }
   };
